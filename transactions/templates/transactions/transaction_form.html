@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>新增交易</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">新增交易</h1>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="button" id="suggestBtn" class="btn btn-outline-info btn-sm mb-3">
+                🤖 根據備註自動建議分類
+            </button>
+            <br>
+            <button type="submit" class="btn btn-success">送出</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('suggestBtn').addEventListener('click', function () {
+            // 找到備註欄位的輸入框（id 通常是 id_note）
+            const note = document.getElementById('id_note').value;
+
+            if (!note) {
+                alert('請先輸入備註！');
+                return;
+            }
+
+            // 呼叫剛才建立的 API
+            fetch(`/suggest-category/?note=${encodeURIComponent(note)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestedCategory = data.category;
+
+                    // 找到分類的下拉選單（id 通常是 id_category）
+                    const categorySelect = document.getElementById('id_category');
+
+                    // 遍歷下拉選單的選項，找到文字符合的那個
+                    for (let option of categorySelect.options) {
+                        if (option.text.includes(suggestedCategory)) {
+                            categorySelect.value = option.value;
+                            break;
+                        }
+                    }
+
+                    alert(`AI 建議分類：${suggestedCategory}`);
+                });
+        });
+    </script>
+</body>
+
+</html>
